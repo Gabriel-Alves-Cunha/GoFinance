@@ -1,4 +1,7 @@
 import React from "react";
+
+import { IconProps } from "../Form/TransactionTypeButton/styles";
+
 import {
 	Container,
 	Header,
@@ -13,12 +16,12 @@ interface Props {
 	title: string;
 	amount: string;
 	lastTransaction: string;
-	type: "up" | "down" | "total";
+	type: IconProps["type"] | "total";
 }
 
 const icon = {
-	up: "arrow-up-circle",
-	down: "arrow-down-circle",
+	positive: "arrow-up-circle",
+	negative: "arrow-down-circle",
 	total: "dollar-sign",
 };
 

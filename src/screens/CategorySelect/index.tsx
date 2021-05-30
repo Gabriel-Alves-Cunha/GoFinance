@@ -1,6 +1,7 @@
 import React from "react";
 import { FlatList } from "react-native-gesture-handler";
 import { Button } from "../../components/Form/Button";
+
 import { categories } from "../../utils/categories";
 
 import {
@@ -19,17 +20,21 @@ interface Category {
 	name: string;
 }
 
-interface CategoryProps {
+interface CategorySelectProps {
 	category: Category;
 	setCategory: (category: Category) => void;
-	closeSelectedCategory: () => void;
+	closeSelectCategoryModal: () => void;
 }
 
 export function CategorySelect({
 	category,
-	closeSelectedCategory,
 	setCategory,
-}: CategoryProps) {
+	closeSelectCategoryModal,
+}: CategorySelectProps) {
+	function handleCategorySelect(category: Category) {
+		setCategory(category);
+	}
+
 	return (
 		<Container>
 			<Header>
@@ -42,7 +47,10 @@ export function CategorySelect({
 				keyExtractor={(item) => item.key}
 				ItemSeparatorComponent={() => <Separator />}
 				renderItem={({ item }) => (
-					<Category>
+					<Category
+						onPress={() => handleCategorySelect(item)}
+						isActive={category.key === item.key}
+					>
 						<Icon name={item.icon} />
 						<Name>{item.name}</Name>
 					</Category>
@@ -50,7 +58,7 @@ export function CategorySelect({
 			/>
 
 			<Footer>
-				<Button title="Selecionar" onPress={closeSelectedCategory} />
+				<Button title="Selecionar" onPress={closeSelectCategoryModal} />
 			</Footer>
 		</Container>
 	);

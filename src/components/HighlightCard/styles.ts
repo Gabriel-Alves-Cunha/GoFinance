@@ -1,9 +1,11 @@
 import styled, { css } from "styled-components/native";
 import { Feather } from "@expo/vector-icons";
-import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { RFValue } from "react-native-responsive-fontsize";
+
+import { IconProps } from "../Form/TransactionTypeButton/styles";
 
 interface TypeProps {
-	type: "up" | "down" | "total";
+	type: IconProps["type"] | "total";
 }
 
 export const Container = styled.View<TypeProps>`
@@ -35,12 +37,12 @@ export const Icon = styled(Feather)<TypeProps>`
 	font-size: ${RFValue(40)}px;
 
 	${({ type }) =>
-		type === "up" &&
+		type === "positive" &&
 		css`
 			color: ${({ theme }) => theme.colors.success};
 		`};
 	${({ type }) =>
-		type === "down" &&
+		type === "negative" &&
 		css`
 			color: ${({ theme }) => theme.colors.attention};
 		`};

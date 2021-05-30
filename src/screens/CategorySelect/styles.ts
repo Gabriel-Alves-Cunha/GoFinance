@@ -1,8 +1,14 @@
-import { Feather } from "@expo/vector-icons";
-import { RFValue } from "react-native-responsive-fontsize";
 import styled from "styled-components/native";
+import { RectButton, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { RFValue } from "react-native-responsive-fontsize";
+import { Feather } from "@expo/vector-icons";
 
-export const Container = styled.View`
+interface CategoryProps {
+	isActive: boolean;
+}
+
+// `GestureHandlerRootView` is needed for android button to work!
+export const Container = styled(GestureHandlerRootView)`
 	flex: 1;
 	background-color: ${({ theme }) => theme.colors.background};
 `;
@@ -25,12 +31,15 @@ export const Title = styled.Text`
 	color: ${({ theme }) => theme.colors.shape};
 `;
 
-export const Category = styled.View`
+export const Category = styled(RectButton)<CategoryProps>`
 	width: 100%;
 	padding: ${RFValue(15)}px;
 
 	flex-direction: row;
 	align-items: center;
+
+	background-color: ${({ isActive, theme }) =>
+		isActive ? theme.colors.secondary_light : theme.colors.background};
 `;
 
 export const Icon = styled(Feather)`
@@ -54,5 +63,3 @@ export const Footer = styled.View`
 	width: 100%;
 	padding: 24px;
 `;
-
-export const ButtonText = styled.Text``;
