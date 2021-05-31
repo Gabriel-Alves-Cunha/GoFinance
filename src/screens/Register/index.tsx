@@ -13,6 +13,7 @@ import { CategorySelect } from "../CategorySelect";
 import { DataListProps } from "../Dashboard";
 import { IconProps } from "../../components/Form/TransactionTypeButton/styles";
 import { InputForm } from "../../components/Form/InputForm";
+import { useAuth } from "../../hooks/auth";
 import { Button } from "../../components/Form/Button";
 
 import AppInfo from "../../../app.json";
@@ -41,12 +42,13 @@ async function clearTransactions(transactions: string) {
 	console.log("Cleared transaction data:", data);
 }
 
-export const dataKey = "@" + AppInfo.name + ":" + "transactions";
+export const dataKey = "@" + AppInfo.name + ":" + "transactions_user:";
 
 export function Register() {
+	const { user } = useAuth();
+	const dataKey_ = dataKey + user!.id;
 	const clearAllTransactionData = false;
-	if (clearAllTransactionData) clearTransactions(dataKey);
-	///////////
+	if (clearAllTransactionData) clearTransactions(dataKey_);
 
 	const [transactionType, setTransactionType] =
 		useState<IconProps["type"] | "">("");
@@ -55,7 +57,6 @@ export function Register() {
 		key: "category",
 		name: "Categoria",
 	});
-
 	const {
 		control,
 		handleSubmit,
@@ -76,14 +77,15 @@ export function Register() {
 			amount: form.amount,
 			type: transactionType,
 			category: category.key,
-			date: String(new Date())
+			date: String(new Date()),
 		};
 
 		try {
-			const response = await AsyncStorage.getItem(dataKey);
+			const response = await AsyncStorage.getItem(dataKey_);
 			const oldData: DataListProps[] = response ? JSON.parse(response) : [];
 			const newData = [...oldData, newTransaction];
-			await AsyncStorage.setItem(dataKey, JSON.stringify(newData));
+			//console.log("newData:", newData);
+			await AsyncStorage.setItem(dataKey_, JSON.stringify(newData));
 
 			reset();
 			setTransactionType("");

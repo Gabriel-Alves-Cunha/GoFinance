@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { DataListProps } from "../Dashboard";
 import { HistoryCard } from "../../components/HistoryCard";
 import { categories } from "../../utils/categories";
+import { useAuth } from "../../hooks/auth";
 import { dataKey } from "../Register";
 
 import {
@@ -38,6 +39,8 @@ interface CategoryData {
 
 export function Resume() {
 	const theme = useTheme();
+	const { user } = useAuth();
+
 	const [isLoading, setIsLoading] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>(
@@ -52,32 +55,34 @@ export function Resume() {
 	async function loadFormattedData() {
 		setIsLoading(true);
 
-		const response = await AsyncStorage.getItem(dataKey);
+		const dataKey_ = dataKey + user!.id;
+		const response = await AsyncStorage.getItem(dataKey_);
 		const data: DataListProps[] = response ? JSON.parse(response) : [];
-		const outcomes = data.filter(
-			(outcome) =>
-				outcome.type === "negative" &&
-				new Date(outcome.date).getMonth() === selectedDate.getMonth() &&
-				new Date(outcome.date).getFullYear() === selectedDate.getFullYear()
+		//console.log("Transactions stored:", data);
+
+		const transactionsThatIWant = data.filter(
+			(transaction) =>
+				new Date(transaction.date).getMonth() === selectedDate.getMonth() &&
+				new Date(transaction.date).getFullYear() === selectedDate.getFullYear()
 		);
-		const totalOutcomes = outcomes.reduce(
-			(acc, outcome) => acc + Number(outcome.amount),
+		const totalValue = transactionsThatIWant.reduce(
+			(acc, transaction) => acc + Number(transaction.amount),
 			0
 		);
 
-		const totalByCategory: CategoryData[] = [];
-
+		const totalValueByCategory: CategoryData[] = [];
 		categories.forEach((category) => {
 			let sum = 0;
 
-			outcomes.forEach((outcome) => {
-				if (outcome.category === category.key) sum += Number(outcome.amount);
+			transactionsThatIWant.forEach((transaction) => {
+				if (transaction.category === category.key)
+					sum += Number(transaction.amount);
 			});
 
 			if (sum > 0) {
-				const percent = `${((sum / totalOutcomes) * 100).toFixed(0)}%`;
+				const percent = `${((sum / totalValue) * 100).toFixed(1)}%`;
 
-				totalByCategory.push({
+				totalValueByCategory.push({
 					color: category.color,
 					name: category.name,
 					key: category.key,
@@ -87,8 +92,9 @@ export function Resume() {
 			}
 		});
 
-		setTotalByCategories(totalByCategory);
+		setTotalByCategories(totalValueByCategory);
 		setIsLoading(false);
+		//console.log("Total de categorias:", totalByCategories);
 	}
 
 	useFocusEffect(
@@ -128,8 +134,10 @@ export function Resume() {
 
 					<ChartContainer>
 						<VictoryPie
-							data={totalByCategories}
-							colorScale={totalByCategories.map((category) => category.color)}
+							data={totalByCategories.map((trx) => {
+								return { x: trx.key, y: Number(trx.total), label: trx.percent };
+							})}
+							colorScale={totalByCategories.map((trx) => trx.color)}
 							style={{
 								labels: {
 									fontSize: RFValue(18),
@@ -137,12 +145,10 @@ export function Resume() {
 									fill: theme.colors.shape,
 								},
 							}}
-							padAngle={1}
+							padAngle={10} // gap
 							labelRadius={75}
 							cornerRadius={50}
 							innerRadius={30}
-							x="total"
-							y="percent"
 						/>
 					</ChartContainer>
 

@@ -4,7 +4,6 @@ import "intl/locale-data/jsonp/pt-BR";
 
 import React from "react";
 import AppLoading from "expo-app-loading";
-import { NavigationContainer } from "@react-navigation/native";
 import { ThemeProvider } from "styled-components";
 import { StatusBar } from "react-native";
 import {
@@ -14,8 +13,8 @@ import {
 	Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 
-import { AppRoutes } from "./src/routes/app.routes";
-import { SignIn } from "./src/screens/SignIn";
+import { AuthProvider, useAuth } from "./src/hooks/auth";
+import { Routes } from "./src/routes";
 import theme from "./src/global/styles/theme";
 
 export default function App() {
@@ -24,22 +23,24 @@ export default function App() {
 		Poppins_500Medium,
 		Poppins_700Bold,
 	});
+	const { isLoadingStoragedUser } = useAuth();
 
-	if (!areFontsLoaded) {
+	if (!areFontsLoaded || isLoadingStoragedUser) {
 		if (error) console.error("Error loading fonts:", error);
+		if (isLoadingStoragedUser) console.info("Loading storaged user!");
 		return <AppLoading />;
 	}
 
 	return (
 		<ThemeProvider theme={theme}>
-			<NavigationContainer>
-				<StatusBar
-					barStyle="light-content"
-					backgroundColor={theme.colors.primary}
-				/>
+			<StatusBar
+				barStyle="light-content"
+				backgroundColor={theme.colors.primary}
+			/>
 
-				<SignIn />
-			</NavigationContainer>
+			<AuthProvider>
+				<Routes />
+			</AuthProvider>
 		</ThemeProvider>
 	);
 }

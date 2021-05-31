@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HighlightCard } from "../../components/HighlightCard";
 import { IconProps } from "../../components/Form/TransactionTypeButton/styles";
+import { useAuth } from "../../hooks/auth";
 import { dataKey } from "../Register";
 import {
 	TransactionCard,
@@ -49,11 +50,17 @@ function getTransactionDate(
 	transactions: DataListProps[],
 	type: IconProps["type"]
 ) {
+	const collectionFilttered = transactions.filter(
+		(transaction) => transaction.type === type
+	);
+
+	if (collectionFilttered.length === 0) return "29 de fevereiro";
+
 	const lastTransaction = Math.max.apply(
 		Math,
-		transactions
-			.filter((transaction) => transaction.type === type)
-			.map((transaction) => new Date(transaction.date).getTime())
+		collectionFilttered.map((transaction) =>
+			new Date(transaction.date).getTime()
+		)
 	);
 	const lastTransactionDate = new Date(lastTransaction);
 	const lastTransactionDay = lastTransactionDate.getDate();
@@ -66,6 +73,7 @@ function getTransactionDate(
 
 export function Dashboard() {
 	const theme = useTheme();
+	const { signOut, user } = useAuth();
 
 	const [isLoading, setIsLoading] = useState(true);
 	const [transactions, setTransactions] = useState<DataListProps[]>([]);
@@ -77,11 +85,12 @@ export function Dashboard() {
 		});
 
 	async function loadTransactionsFormatted() {
-		const response = await AsyncStorage.getItem(dataKey);
+		const dataKey_ = dataKey + user!.id;
+		const response = await AsyncStorage.getItem(dataKey_);
 		const transactions: DataListProps[] = response ? JSON.parse(response) : [];
+
 		let totalIncome = 0;
 		let totalOutcome = 0;
-
 		const transactionsFormatted: DataListProps[] = transactions.map((item) => {
 			if (item.type === "positive") {
 				totalIncome += Number(item.amount);
@@ -100,7 +109,7 @@ export function Dashboard() {
 				year: "2-digit",
 			}).format(new Date(item.date));
 
-			return {
+			const ret = {
 				category: item.category,
 				type: item.type,
 				name: item.name,
@@ -108,7 +117,11 @@ export function Dashboard() {
 				amount,
 				date,
 			};
+			//console.log("Transaction formatted:", ret);
+
+			return ret;
 		});
+		//console.info("Transactions formatted:", transactionsFormatted);
 
 		setTransactions(transactionsFormatted);
 
@@ -141,7 +154,6 @@ export function Dashboard() {
 		});
 
 		setIsLoading(false);
-		//console.info("Transactions formatted:", transactionsFormatted);
 	}
 
 	useFocusEffect(
@@ -163,16 +175,16 @@ export function Dashboard() {
 							<UserInfo>
 								<Photo
 									source={{
-										uri: "https://avatars.githubusercontent.com/u/52057747?v=4",
+										uri: user?.photo,
 									}}
 								/>
 								<User>
 									<UserGreeting>Olá,</UserGreeting>
-									<UserName>Gabriel</UserName>
+									<UserName>{user?.name}</UserName>
 								</User>
 							</UserInfo>
 
-							<LogoutButton onPress={() => {}}>
+							<LogoutButton onPress={signOut}>
 								<Icon name="power" />
 							</LogoutButton>
 						</UserWrapper>
