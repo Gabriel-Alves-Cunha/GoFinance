@@ -37,8 +37,8 @@ const schema = Yup.object().shape({
 		.required("Insira um valor!"),
 });
 
-async function clearTransactions(transactions: string) {
-	const data = await AsyncStorage.removeItem(transactions);
+async function clearDataFromAsyncStorage(Key: string) {
+	const data = await AsyncStorage.removeItem(Key);
 	console.log("Cleared transaction data:", data);
 }
 
@@ -48,7 +48,7 @@ export function Register() {
 	const { user } = useAuth();
 	const dataKey_ = dataKey + user!.id;
 	const clearAllTransactionData = false;
-	if (clearAllTransactionData) clearTransactions(dataKey_);
+	if (clearAllTransactionData) clearDataFromAsyncStorage(dataKey_);
 
 	const [transactionType, setTransactionType] =
 		useState<IconProps["type"] | "">("");
